@@ -1,21 +1,32 @@
 "use server"
 
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { getServerSession } from "@/lib/session"
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
-// ✅ Récupérer toutes les voitures de l'utilisateur
-export async function GET() {
-  const session = await getServerSession(authOptions)
+// ✅ Récupérer les voitures de l'utilisateur (actives par défaut, archivées si paramètre)
+export async function GET(request: Request) {
+  const session = await getServerSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
 
+  const { searchParams } = new URL(request.url)
+  const type = searchParams.get('type') // 'active', 'archived', ou 'all'
+
+  let whereClause: any = { userId: session.user.id }
+
+  if (type === 'archived') {
+    whereClause.published = false
+  } else if (type === 'active') {
+    whereClause.published = true
+  }
+  // Si type === 'all', on récupère tout
+
   const cars = await prisma.car.findMany({
-    where: { userId: session.user.id },
+    where: whereClause,
     orderBy: { createdAt: "desc" },
   })
 
@@ -24,7 +35,7 @@ export async function GET() {
 
 // ✅ Créer une voiture
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
@@ -42,11 +53,14 @@ export async function POST(req: Request) {
       fuel: body.fuel,
       transmission: body.transmission,
       description: body.description,
-      published: false,
+      published: true, // ✅ Publier automatiquement les nouvelles annonces
       userId: session.user.id,
-     
-      imageUrl: body.imageUrl, // ✅ ici
-     
+
+      imageUrl: body.imageUrl,
+      imageUrl2: body.imageUrl2,
+      imageUrl3: body.imageUrl3,
+
+
     },
   })
 

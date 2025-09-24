@@ -8,32 +8,41 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  accounts      Account[]
-  sessions      Session[]
-  cars          Car[]
-  payments      Payment[]
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  email           String?   @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?
+  isActive        Boolean   @default(false)
+  activationToken String?
+  resetToken      String?
+  resetTokenExpiry DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  accounts        Account[]
+  sessions        Session[]
+  cars            Car[]
+  payments        Payment[]
+  purchases       Purchase[]
+  ratings         Rating[]
 }
 
 model Account {
-  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId             String  @db.ObjectId
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
 
@@ -42,7 +51,7 @@ model Session {
   sessionToken String   @unique
   userId       String   @db.ObjectId
   expires      DateTime
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -50,6 +59,7 @@ model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
+
   @@unique([identifier, token])
 }
 
@@ -62,6 +72,7 @@ model Car {
   userId      String   @db.ObjectId
   user        User     @relation(fields: [userId], references: [id])
   payments    Payment[]
+  purchases   Purchase[]
 
   brand        String
   model        String
@@ -71,6 +82,8 @@ model Car {
   transmission String
   description  String?
   imageUrl     String?
+ imageUrl2     String?
+ imageUrl3    String?
 }
 
 model Payment {
@@ -84,4 +97,28 @@ model Payment {
   user        User     @relation(fields: [userId], references: [id])
   carId       String?  @db.ObjectId
   car         Car?     @relation(fields: [carId], references: [id])
+}
+
+model Purchase {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  buyerId     String   @db.ObjectId
+  buyer       User     @relation(fields: [buyerId], references: [id])
+  carId       String   @db.ObjectId
+  car         Car      @relation(fields: [carId], references: [id])
+  paymentId   String   @db.ObjectId
+  amount      Float
+  purchaseDate DateTime @default(now())
+  status      String   @default("completed")
+}
+
+model Rating {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating    Int      // Note de 1 à 5 étoiles
+  comment   String?  // Commentaire optionnel
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId]) // Un utilisateur ne peut noter qu'une seule fois
 }
