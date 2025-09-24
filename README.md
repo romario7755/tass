@@ -1,4 +1,4 @@
-# ENRE - Application d'Authentification Next.js
+# TASS-AUTO - Application d'Authentification Next.js
 
 Une application web moderne construite avec Next.js 15, NextAuth.js, Prisma et PostgreSQL.
 
@@ -32,7 +32,7 @@ Une application web moderne construite avec Next.js 15, NextAuth.js, Prisma et P
 1. **Cloner le projet**
 ```bash
 git clone <url-du-repo>
-cd enre
+cd tass-auto
 ```
 
 2. **Installer les dépendances**
@@ -47,7 +47,7 @@ cp .env.example .env.local
 
 Modifier `.env.local` avec vos valeurs :
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/enre_db"
+DATABASE_URL="postgresql://username:password@localhost:5432/tass_auto_db"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="votre-clé-secrète-très-sécurisée"
 ```
@@ -82,7 +82,7 @@ L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
 ## 📁 Structure du projet
 
 ```
-enre/
+tass-auto/
 ├── app/
 │   ├── api/
 │   │   ├── auth/[...nextauth]/     # Configuration NextAuth
